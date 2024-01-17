@@ -1,18 +1,33 @@
+
 # Elementary Cellular Automata
 
-<img src="share/showcase.jpg" alt="showcase" width="400"/>
+![showcase](share/showcase.gif)
 
-## Usage
+> All the rules are from the [wolfram's elementary cellular automata ruleset](https://mathworld.wolfram.com/ElementaryCellularAutomaton.html)
 
-You can change the `ruleset` variable in `src/main.c`, and set a rule based on [wolfram's 256 rules](https://mathworld.wolfram.com/ElementaryCellularAutomaton.html). You may also change the `CELL_SIZE` in `include/automata.h` to change the size of each pixel.
+## DISCLAIMER
+
+I worked on this project on MacOS (Macbook Air M1), and so the `Makefile` is currently configured to work on my machine. `make` may work on your machine, but I have yet to test on other machines. Contributions are welcomed for those who want the project to work on other OS's.
 
 ## Dependencies
-
 - `SDL2`
-- May need to change `CMakeLists.txt` depending on your system, unless I update it for all OS's
+- `OpenGL`
+- [`microui`](https://github.com/rxi/microui)
+
+## Install (MacOS)
+
+```
+brew install sdl2
+brew install glfw
+```
 
 ## Compile & Run
 
 ```bash
-./compile ; ./run
+# there is already a executable in the bin you can run
+./bin/simulate
+
+# otherwise you may have to compile yourself
+make clean ; make
+./bin/simulate
 ```
