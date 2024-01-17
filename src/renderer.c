@@ -25,7 +25,7 @@ static SDL_Window *window;
 void r_init(void) {
     /* init SDL window */
     window = SDL_CreateWindow(
-            NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+            "Elementary Cellular Automata", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
             SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
     SDL_GL_CreateContext(window);
 
@@ -129,16 +129,6 @@ static void push_quad(mu_Rect dst, mu_Rect src, mu_Color color) {
 
 void r_draw_rect(mu_Rect rect, mu_Color color) {
     push_quad(rect, atlas[ATLAS_WHITE], color);
-}
-
-// my function: draw a square
-void drawSquare(int x, int y, int w, int h) {
-    glBegin(GL_QUADS);
-    glVertex2i(x, y);
-    glVertex2i(x + w, y);
-    glVertex2i(x + w, y + h);
-    glVertex2i(x, y + h);
-    glEnd();
 }
 
 

@@ -4,3 +4,4 @@ include/.cache
 .DS_Store
 compile_commands.json
 bin/simulate.dSYM
+bin/*.o

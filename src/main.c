@@ -10,31 +10,39 @@ mu_Context *ctx;
 
 // background color
 static  float bg[3] = { 255, 255, 255 };
-static   char buf[4];
+static   char ruleStr[4] = "30";
+static   char cellSizeStr[4] = "5";
 static    int *cells;
+
+// initial values for cellular automata
 static    int ruleset = 30;
+static    int CELL_SIZE = 5;
+static    int NUM_CELLS;
 
-// handling events prototype
-void handleEvents(void);
-void renderAutomata(void);
+// sample ui window
+static void settings_window(mu_Context *ctx) {
+    if (mu_begin_window(ctx, "Configure", mu_rect(10, 10, 145, 105))) {
+        mu_layout_row(ctx, 2, (int[]) { 60, -1 }, 0);
 
-// sample gui window
-static void log_window(mu_Context *ctx) {
-    if (mu_begin_window(ctx, "Configure", mu_rect(40, 40, 100, 110))) {
         mu_label(ctx, "Ruleset");
-        mu_textbox(ctx, buf, sizeof(buf));
+        mu_textbox(ctx, ruleStr, sizeof(ruleStr));
+
+        mu_label(ctx, "Cell Size");
+        mu_textbox(ctx, cellSizeStr, sizeof(cellSizeStr));
+
         if (mu_button(ctx, "Render")) {
-            ruleset = atoi(buf);
-            printf("%d\n", ruleset);
+            ruleset = (atoi(ruleStr) == 0) ? ruleset : atoi(ruleStr);
+            CELL_SIZE = (atoi(cellSizeStr) == 0) ? CELL_SIZE : atoi(cellSizeStr);
+            NUM_CELLS = SCREEN_WIDTH / CELL_SIZE;
         }
         mu_end_window(ctx);
     }
 }
 
-// processing frame with gui
+// processing frame for gui
 static void process_frame(mu_Context *ctx) {
     mu_begin(ctx);
-    log_window(ctx);
+    settings_window(ctx);
     mu_end(ctx);
 }
 
@@ -89,12 +97,10 @@ int main(void) {
     ctx->text_width = text_width;
     ctx->text_height = text_height;
 
-    // Setup simulation
-    int i;
+    // initial cells
+    NUM_CELLS = SCREEN_WIDTH / CELL_SIZE;
     cells = (int *)malloc(NUM_CELLS * sizeof(int));
-    for (i = 0; i < NUM_CELLS; i++)
-        cells[i] = 0;
-    cells[NUM_CELLS / 2] = 1;
+    for (int i = 0; i < NUM_CELLS; i++) cells[i] = 0;
 
     // Main loop
     for (;;) {
@@ -104,7 +110,7 @@ int main(void) {
 
         // gui rendering
         r_clear(mu_color(bg[0], bg[1], bg[2], 255));
-        // renderAutomata();
+        renderAutomata();
 
         mu_Command *cmd = NULL;
         while (mu_next_command(ctx, &cmd)) {
@@ -118,17 +124,12 @@ int main(void) {
 
         r_present();
     }
+
+    free(cells);
+    free(ctx);
     return 0;
 }
 
-void renderAutomata(void) {
-    int y = 0;
-    while (y < SCREEN_HEIGHT) {
-        drawGeneration(cells, y);
-        getNextGeneration(cells, ruleset);
-        y += CELL_SIZE;
-    }
-}
 
 /*
  * Function:  calculateState
@@ -142,7 +143,7 @@ void renderAutomata(void) {
  *
  *  returns: integer representing the new state of curr
  */
-int calculateState(int ruleset, int left, int curr, int right) {
+int calculateState(int left, int curr, int right) {
     int value, pos, dec;
     int rules[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -165,21 +166,18 @@ int calculateState(int ruleset, int left, int curr, int right) {
  * --------------------
  * changes cells into the next generation, using a ruleset number
  *
- *  cells:      array of ints representing the cells
- *  ruleset:    decimal value indicating the rules
  */
-void getNextGeneration(int* cells, int ruleset) {
+void getNextGeneration(void) {
     int i;
     int *newCells = (int* )malloc(NUM_CELLS * sizeof(int));
     for (i = 1; i < NUM_CELLS-1; i++) {
         // calculate the state
-        newCells[i] = calculateState(ruleset, cells[i - 1], cells[i], cells[i + 1]);
+        newCells[i] = calculateState(cells[i - 1], cells[i], cells[i + 1]);
     }
 
-
     // include wrap around
-    newCells[0] = calculateState(ruleset, cells[NUM_CELLS-1], cells[0], cells[1]);
-    newCells[NUM_CELLS - 1] = calculateState(ruleset, cells[NUM_CELLS - 2],
+    newCells[0] = calculateState(cells[NUM_CELLS-1], cells[0], cells[1]);
+    newCells[NUM_CELLS - 1] = calculateState(cells[NUM_CELLS - 2],
             cells[NUM_CELLS - 1], cells[0]);
 
     // replace old cells to new cells
@@ -192,17 +190,38 @@ void getNextGeneration(int* cells, int ruleset) {
  * --------------------
  * draws cells into the screen
  *
- *  cells:      array of ints representing the cells
  *  row:        row (in pixels) for the cells to occupy
  *
  */
-void drawGeneration(int *cells, int row) {
+void drawGeneration(int row) {
     int i;
     for (i = 0; i < NUM_CELLS; i++) {
         int color = 255 - (255 * cells[i]);
-        glColor3f(color, color, color);
-        drawSquare(1 * CELL_SIZE, 1, CELL_SIZE, CELL_SIZE);
+        r_draw_rect(mu_rect(i * CELL_SIZE, row, CELL_SIZE, CELL_SIZE),
+                    mu_color(color, color, color, 255));
     }
+}
+
+/*
+ * Function:  renderAutomata
+ * --------------------
+ * Handles rendering the pattern
+ *
+ */
+void renderAutomata(void) {
+    int i;
+    cells = (int *)malloc(NUM_CELLS * sizeof(int));
+    for (i = 0; i < NUM_CELLS; i++)
+        cells[i] = 0;
+    cells[NUM_CELLS / 2] = 1;
+
+    int y = 0;
+    while (y < SCREEN_HEIGHT) {
+        drawGeneration(y);
+        getNextGeneration();
+        y += CELL_SIZE;
+    }
+
 }
 
 /*

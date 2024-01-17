@@ -8,9 +8,11 @@
 
 #include "microui.h"
 
+// added just for simplicity in main function
+void handleEvents(void);
+
 void r_init(void);
 void r_draw_rect(mu_Rect rect, mu_Color color);
-void drawSquare(int x, int y, int w, int h);
 void r_draw_text(const char *text, mu_Vec2 pos, mu_Color color);
 void r_draw_icon(int id, mu_Rect rect, mu_Color color);
  int r_get_text_width(const char *text, int len);
